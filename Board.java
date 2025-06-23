@@ -1,114 +1,70 @@
 import java.awt.*;
+
 /**
  * The Board class models the ROWS-by-COLS game board.
  */
 public class Board {
-    // Define named constants
-    public static final int ROWS = 3;  // ROWS x COLS cells
-    public static final int COLS = 3;
-    // Define named constants for drawing
-    public static final int CANVAS_WIDTH = Cell.SIZE * COLS;  // the drawing canvas
-    public static final int CANVAS_HEIGHT = Cell.SIZE * ROWS;
-    public static final int GRID_WIDTH = 2;  // Grid-line's width
-    public static final int GRID_WIDTH_HALF = GRID_WIDTH / 2; // Grid-line's half-width
-    public static final Color COLOR_GRID = Color.LIGHT_GRAY;  // grid lines
-    public static final int Y_OFFSET = 1;  // Fine tune for better display
 
-    // Define properties (package-visible)
-    /** Composes of 2D array of ROWS-by-COLS Cell instances */
+    /* ==== Konstanta grid ==== */
+    public static final int ROWS = 3;
+    public static final int COLS = 3;
+
+    /* ==== Konstanta gambar ==== */
+    public static final int CANVAS_WIDTH  = Cell.SIZE * COLS;
+    public static final int CANVAS_HEIGHT = Cell.SIZE * ROWS;
+
+    public static final int GRID_WIDTH       = 2;
+    public static final int GRID_WIDTH_HALF  = GRID_WIDTH / 2;
+    public static final int Y_OFFSET         = 1;          // Fine-tune vertikal
+    public static final Color COLOR_GRID     = Color.LIGHT_GRAY;
+
+    /* ==== Data ==== */
+    /** 2-D array berisi objek Cell. */
     Cell[][] cells;
 
-    /** Constructor to initialize the game board */
+    /* ==== Konstruktor ==== */
     public Board() {
         initGame();
     }
 
-    /** Initialize the game objects (run once) */
+    /* ==== Inisialisasi papan (sekali saja) ==== */
     public void initGame() {
-        cells = new Cell[ROWS][COLS]; // allocate the array
-        for (int row = 0; row < ROWS; ++row) {
-            for (int col = 0; col < COLS; ++col) {
-                // Allocate element of the array
-                cells[row][col] = new Cell(row, col);
-                // Cells are initialized in the constructor
+        cells = new Cell[ROWS][COLS];
+        for (int r = 0; r < ROWS; r++) {
+            for (int c = 0; c < COLS; c++) {
+                cells[r][c] = new Cell(r, c);
             }
         }
     }
 
-    /** Reset the game board, ready for new game */
+    /* ==== Reset isi papan untuk game baru ==== */
     public void newGame() {
-        for (int row = 0; row < ROWS; ++row) {
-            for (int col = 0; col < COLS; ++col) {
-                cells[row][col].newGame(); // clear the cell content
+        for (int r = 0; r < ROWS; r++) {
+            for (int c = 0; c < COLS; c++) {
+                cells[r][c].newGame();
             }
         }
     }
 
-    /**
-     *  The given player makes a move on (selectedRow, selectedCol).
-     *  Update cells[selectedRow][selectedCol]. Compute and return the
-     *  new game state (PLAYING, DRAW, CROSS_WON, NOUGHT_WON).
-     */
-    public State stepGame(Seed player, int selectedRow, int selectedCol) {
-        // Update game board
-        cells[selectedRow][selectedCol].content = player;
+    /* ==== Langkah satu pemain & update state ==== */
+    public State stepGame(Seed player, int row, int col) {
+        cells[row][col].content = player;
 
-        // Compute and return the new game state
-        if (cells[selectedRow][0].content == player  // 3-in-the-row
-                && cells[selectedRow][1].content == player
-                && cells[selectedRow][2].content == player
-                || cells[0][selectedCol].content == player // 3-in-the-column
-                && cells[1][selectedCol].content == player
-                && cells[2][selectedCol].content == player
-                || selectedRow == selectedCol     // 3-in-the-diagonal
-                && cells[0][0].content == player
-                && cells[1][1].content == player
-                && cells[2][2].content == player
-                || selectedRow + selectedCol == 2 // 3-in-the-opposite-diagonal
-                && cells[0][2].content == player
-                && cells[1][1].content == player
-                && cells[2][0].content == player) {
-            return (player == Seed.CROSS) ? State.CROSS_WON : State.NOUGHT_WON;
-        } else {
-            // Nobody win. Check for DRAW (all cells occupied) or PLAYING.
-            for (int row = 0; row < ROWS; ++row) {
-                for (int col = 0; col < COLS; ++col) {
-                    if (cells[row][col].content == Seed.NO_SEED) {
-                        return State.PLAYING; // still have empty cells
-                    }
-                }
-            }
-            return State.DRAW; // no empty cell, it's a draw
-        }
-    }
+        // cek menang
+        if (cells[row][0].content == player && cells[row][1].content == player && cells[row][2].content == player ||
+                cells[0][col].content == player && cells[1][col].content == player && cells[2][col].content == player ||
+                row == col &&        // diagonal utama
+                        cells[0][0].content == player && cells[1][1].content == player && cells[2][2].content == player ||
+                row + col == 2 &&    // diagonal anti
+                        cells[0][2].content == player && cells[1][1].content == player && cells[2][0].content == player) {
 
-    /**
-     * Check the game state after the given player moves at (selectedRow, selectedCol).
-     * Does NOT modify the board state.
-     */
-    public State checkGameState(Seed player, int selectedRow, int selectedCol) {
-        // Check for win
-        if (cells[selectedRow][0].content == player
-                && cells[selectedRow][1].content == player
-                && cells[selectedRow][2].content == player
-                || cells[0][selectedCol].content == player
-                && cells[1][selectedCol].content == player
-                && cells[2][selectedCol].content == player
-                || selectedRow == selectedCol
-                && cells[0][0].content == player
-                && cells[1][1].content == player
-                && cells[2][2].content == player
-                || selectedRow + selectedCol == 2
-                && cells[0][2].content == player
-                && cells[1][1].content == player
-                && cells[2][0].content == player) {
             return (player == Seed.CROSS) ? State.CROSS_WON : State.NOUGHT_WON;
         }
 
-        // Check for draw
-        for (int row = 0; row < ROWS; ++row) {
-            for (int col = 0; col < COLS; ++col) {
-                if (cells[row][col].content == Seed.NO_SEED) {
+        // cek draw atau masih main
+        for (int r = 0; r < ROWS; r++) {
+            for (int c = 0; c < COLS; c++) {
+                if (cells[r][c].content == Seed.NO_SEED) {
                     return State.PLAYING;
                 }
             }
@@ -116,27 +72,55 @@ public class Board {
         return State.DRAW;
     }
 
+    /* ==== Metode util untuk AI: mengembalikan snapshot papan ==== */
+    public Seed[][] getCellContents() {
+        Seed[][] contents = new Seed[ROWS][COLS];
+        for (int r = 0; r < ROWS; r++) {
+            for (int c = 0; c < COLS; c++) {
+                contents[r][c] = cells[r][c].content;
+            }
+        }
+        return contents;
+    }
 
-    /** Paint itself on the graphics canvas, given the Graphics context */
+    /* ==== Hanya mem-check tanpa mengubah papan ==== */
+    public State checkGameState(Seed player, int row, int col) {
+        // (logika sama dengan stepGame, tetapi tidak menulis ke papan)
+        if (cells[row][0].content == player && cells[row][1].content == player && cells[row][2].content == player ||
+                cells[0][col].content == player && cells[1][col].content == player && cells[2][col].content == player ||
+                row == col &&
+                        cells[0][0].content == player && cells[1][1].content == player && cells[2][2].content == player ||
+                row + col == 2 &&
+                        cells[0][2].content == player && cells[1][1].content == player && cells[2][0].content == player) {
+            return (player == Seed.CROSS) ? State.CROSS_WON : State.NOUGHT_WON;
+        }
+
+        for (int r = 0; r < ROWS; r++) {
+            for (int c = 0; c < COLS; c++) {
+                if (cells[r][c].content == Seed.NO_SEED) return State.PLAYING;
+            }
+        }
+        return State.DRAW;
+    }
+
+    /* ==== Gambar papan ==== */
     public void paint(Graphics g) {
-        // Draw the grid-lines
-
         g.setColor(COLOR_GRID);
-        for (int row = 1; row < ROWS; ++row) {
-            g.fillRoundRect(0, Cell.SIZE * row - GRID_WIDTH_HALF,
+        for (int r = 1; r < ROWS; r++) { // garis horizontal
+            g.fillRoundRect(0, Cell.SIZE * r - GRID_WIDTH_HALF,
                     CANVAS_WIDTH - 1, GRID_WIDTH,
                     GRID_WIDTH, GRID_WIDTH);
         }
-        for (int col = 1; col < COLS; ++col) {
-            g.fillRoundRect(Cell.SIZE * col - GRID_WIDTH_HALF, 0 + Y_OFFSET,
+        for (int c = 1; c < COLS; c++) { // garis vertikal
+            g.fillRoundRect(Cell.SIZE * c - GRID_WIDTH_HALF, Y_OFFSET,
                     GRID_WIDTH, CANVAS_HEIGHT - 1,
                     GRID_WIDTH, GRID_WIDTH);
         }
 
-        // Draw all the cells
-        for (int row = 0; row < ROWS; ++row) {
-            for (int col = 0; col < COLS; ++col) {
-                cells[row][col].paint(g);  // ask the cell to paint itself
+        // gambar setiap sel
+        for (int r = 0; r < ROWS; r++) {
+            for (int c = 0; c < COLS; c++) {
+                cells[r][c].paint(g);
             }
         }
     }
