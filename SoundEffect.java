@@ -7,7 +7,8 @@ public enum SoundEffect {
     EXPLODE("audio/explode.wav"),
     DIE("audio/die.wav"),
     BG_MUSIC("audio/bg.wav"),
-    MOUSE_CLICK("audio/mouseclick.wav"); // fixed wrong path
+    MOUSE_CLICK("audio/mouseclick.wav"), // fixed wrong path
+    HOVER("audio/hover.wav");
 
     public static float sfxVolume = 100f;
     public static float musicVolume = 100f;

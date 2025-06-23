@@ -10,7 +10,7 @@ public class GameManager {
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.setContentPane(new StartMenu(frame));
             frame.pack();
-            frame.setSize(720, 900);
+            frame.setSize(720, 800);
             frame.setLocationRelativeTo(null);
             frame.setVisible(true);
         });

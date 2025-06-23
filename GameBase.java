@@ -41,71 +41,76 @@ public class GameBase extends JPanel {
     public void setupUI() {
         setLayout(new BorderLayout());
         setPreferredSize(new Dimension(Board.CANVAS_WIDTH, Board.CANVAS_HEIGHT + 70));
-        setBackground(GameConstants.COLOR_BG);
-        setBorder(BorderFactory.createLineBorder(new Color(100, 100, 130), 3));
+        setBackground(new Color(255, 250, 240)); // background pastel cerah
+        setBorder(BorderFactory.createLineBorder(new Color(255, 204, 153), 4)); // garis krem
 
-        // bikin score label
+        // Label skor
         scoreLabel = new JLabel();
         scoreLabel.setFont(GameConstants.FONT_SCORE);
-        scoreLabel.setForeground(new Color(240, 240, 255));
+        scoreLabel.setForeground(new Color(70, 40, 40));
         scoreLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
+        // Tombol Pause
         JButton pauseButton = new JButton("Pause");
-        pauseButton.setMargin(new Insets(2, 10, 2, 10));
+        pauseButton.setMargin(new Insets(4, 14, 4, 14));
         pauseButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        pauseButton.setAlignmentY(10);
-        pauseButton.setFont(GameConstants.FONT_STATUS);
-        pauseButton.setMaximumSize(new Dimension(240, 50));
-        pauseButton.setBackground(GameConstants.COLOR_BG);
-        pauseButton.setForeground(Color.WHITE);
+        pauseButton.setFont(new Font("Comic Sans MS", Font.BOLD, 16));
+        pauseButton.setBackground(new Color(255, 204, 153));
+        pauseButton.setForeground(Color.DARK_GRAY);
         pauseButton.setFocusPainted(false);
         pauseButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        pauseButton.setBorder(BorderFactory.createLineBorder(new Color(255, 170, 100), 2));
 
         pauseButton.addActionListener(e -> showPauseMenu());
 
-
+        // Panel atas untuk skor
         JPanel topPanel = new JPanel(new BorderLayout()) {
-            @Override public void paintComponent(Graphics g) {
+            @Override
+            protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 Graphics2D g2 = (Graphics2D) g;
-                g2.setPaint(new GradientPaint(0, 0, new Color(40, 40, 70), getWidth(), getHeight(), new Color(30, 30, 50)));
+                g2.setPaint(new GradientPaint(0, 0, new Color(255, 223, 186),
+                        getWidth(), getHeight(), new Color(255, 239, 213)));
                 g2.fillRect(0, 0, getWidth(), getHeight());
             }
         };
         topPanel.setPreferredSize(new Dimension(Board.CANVAS_WIDTH, 45));
         topPanel.add(scoreLabel, BorderLayout.CENTER);
 
-        // bikin statusbar
+        // Panel status di bawah
         JPanel statusPanel = new JPanel(new BorderLayout());
-        statusPanel.setBackground(GameConstants.COLOR_BG_STATUS);
-        statusPanel.setPreferredSize(new Dimension(Board.CANVAS_WIDTH, 30));
+        statusPanel.setBackground(new Color(255, 250, 230));
+        statusPanel.setPreferredSize(new Dimension(Board.CANVAS_WIDTH, 40));
 
         statusBar = new JLabel();
-        statusBar.setFont(GameConstants.FONT_STATUS);
-        statusBar.setForeground(Color.DARK_GRAY);
-        statusBar.setBorder(BorderFactory.createEmptyBorder(6, 12, 6, 12));
+        statusBar.setFont(new Font("Comic Sans MS", Font.PLAIN, 14));
+        statusBar.setForeground(new Color(70, 50, 50));
+        statusBar.setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
         statusBar.setHorizontalAlignment(SwingConstants.LEFT);
         statusPanel.add(statusBar, BorderLayout.CENTER);
 
+        // Panel tombol
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         buttonPanel.setOpaque(false);
         buttonPanel.add(pauseButton);
         statusPanel.add(buttonPanel, BorderLayout.EAST);
 
-
-        // bikin panel board
+        // Panel papan permainan
         boardPanel = new BoardPanel(board);
-        boardPanel.setBackground(GameConstants.COLOR_BG);
+        boardPanel.setBackground(new Color(255, 245, 235));
         boardPanel.addMouseListener(new MouseAdapter() {
-            @Override public void mouseClicked(MouseEvent e) {
+            @Override
+            public void mouseClicked(MouseEvent e) {
                 handleClick(e.getX(), e.getY());
             }
         });
 
+        // Tambahkan semuanya
         add(topPanel, BorderLayout.NORTH);
         add(boardPanel, BorderLayout.CENTER);
         add(statusPanel, BorderLayout.SOUTH);
     }
+
 
     public void updateScoreLabel() {
         scoreLabel.setText(playerXName + ": " + playerXScore + "   |   " + playerOName + ": " + playerOScore);
@@ -127,49 +132,50 @@ public class GameBase extends JPanel {
 
 
     public void showPauseMenu() {
-        //bikin pauseOverlay
         this.pauseOverlay = new JPanel() {
             @Override
             public void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                // Optional: dark overlay
-                g.setColor(new Color(0, 0, 0, 150));
+                g.setColor(new Color(0, 0, 0, 100)); // lebih lembut agar tetap ceria
                 g.fillRect(0, 0, getWidth(), getHeight());
             }
         };
 
-        this.pauseOverlay.setLayout(new BoxLayout(pauseOverlay, BoxLayout.Y_AXIS));
-        this.pauseOverlay.setOpaque(false);
-        this.pauseOverlay.setFocusable(true);
-        this.pauseOverlay.requestFocusInWindow();
+        pauseOverlay.setLayout(new BoxLayout(pauseOverlay, BoxLayout.Y_AXIS));
+        pauseOverlay.setOpaque(false);
+        pauseOverlay.setFocusable(true);
+        pauseOverlay.requestFocusInWindow();
 
-        // supaya tidak bisa klik boardnya saat sedang di pause\
-        this.pauseOverlay.addMouseListener(new MouseAdapter() {});
-        this.pauseOverlay.addMouseMotionListener(new MouseMotionAdapter() {});
-        this.pauseOverlay.addMouseWheelListener(e -> {});
+        // Disable interaksi ke board saat pause
+        pauseOverlay.addMouseListener(new MouseAdapter() {});
+        pauseOverlay.addMouseMotionListener(new MouseMotionAdapter() {});
+        pauseOverlay.addMouseWheelListener(e -> {});
 
-        // bikin box buat tombol continue dan exit
+        // Tombol box
         JPanel buttonBox = new JPanel();
         buttonBox.setOpaque(false);
         buttonBox.setLayout(new BoxLayout(buttonBox, BoxLayout.Y_AXIS));
 
+        // Tombol Continue
         JButton continueButton = new JButton("Continue");
         continueButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        continueButton.setAlignmentY(10);
-        continueButton.setFont(GameConstants.FONT_STATUS);
+        continueButton.setFont(new Font("Comic Sans MS", Font.BOLD, 18));
         continueButton.setMaximumSize(new Dimension(240, 50));
-        continueButton.setBackground(GameConstants.COLOR_BG);
-        continueButton.setForeground(Color.WHITE);
+        continueButton.setBackground(new Color(204, 255, 204));
+        continueButton.setForeground(Color.DARK_GRAY);
+        continueButton.setBorder(BorderFactory.createLineBorder(new Color(102, 204, 102), 2));
         continueButton.setFocusPainted(false);
+        continueButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         continueButton.addActionListener(e -> hidePauseMenu());
 
+        // Tombol Exit
         JButton exitButton = new JButton("Exit to Menu");
         exitButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        exitButton.setAlignmentY(10);
-        exitButton.setFont(GameConstants.FONT_STATUS);
+        exitButton.setFont(new Font("Comic Sans MS", Font.BOLD, 18));
         exitButton.setMaximumSize(new Dimension(240, 50));
-        exitButton.setBackground(GameConstants.COLOR_BG);
-        exitButton.setForeground(Color.WHITE);
+        exitButton.setBackground(new Color(255, 204, 204));
+        exitButton.setForeground(Color.DARK_GRAY);
+        exitButton.setBorder(BorderFactory.createLineBorder(new Color(255, 102, 102), 2));
         exitButton.setFocusPainted(false);
         exitButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
@@ -194,6 +200,7 @@ public class GameBase extends JPanel {
 
         setLayout(null);
         add(pauseOverlay);
+
         SwingUtilities.invokeLater(() -> {
             pauseOverlay.setBounds(0, 0, getWidth(), getHeight());
             setComponentZOrder(pauseOverlay, 0);
@@ -201,6 +208,7 @@ public class GameBase extends JPanel {
             repaint();
         });
     }
+
 
 
     public void hidePauseMenu() {
