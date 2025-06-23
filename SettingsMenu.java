@@ -2,60 +2,93 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import java.io.File;
+import java.util.Hashtable;
 
 public class SettingsMenu extends JPanel {
     public class VolumesMenu extends JPanel {
-        JLabel SFXVolumeLable;
+        JLabel SFXVolumeLabel;
         JSlider SFXVolume;
 
-        JLabel musicVolumeLable;
+        JLabel musicVolumeLabel;
         JSlider musicVolume;
 
         public VolumesMenu() {
             setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-            add(Box.createRigidArea(new Dimension(0, 15)));
+            setBackground(GameConstants.COLOR_BG);
+            add(Box.createRigidArea(new Dimension(0, 20)));
 
-            SFXVolumeLable = new JLabel("SFX Volume");
-            SFXVolumeLable.setAlignmentX(Component.CENTER_ALIGNMENT);
-            SFXVolumeLable.setFont(new Font("SegoeUI", Font.BOLD, 18));
-            SFXVolumeLable.setForeground(Color.WHITE);
+            // SFX Label
+            SFXVolumeLabel = new JLabel("SFX Volume");
+            SFXVolumeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+            SFXVolumeLabel.setFont(new Font("Comic Sans MS", Font.BOLD, 18));
+            SFXVolumeLabel.setForeground(Color.DARK_GRAY);
+            SFXVolumeLabel.setOpaque(true);
+            SFXVolumeLabel.setBackground(new Color(255, 255, 204));
+            SFXVolumeLabel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
 
+            // SFX Slider
             SFXVolume = new JSlider(0, 100);
-            SFXVolume.setBackground(GameConstants.COLOR_BG);
-            SFXVolume.setForeground(Color.WHITE);
-            SFXVolume.setMajorTickSpacing(25);
-            SFXVolume.setMinorTickSpacing(5);
+            SFXVolume.setValue((int) SoundEffect.sfxVolume);
+            SFXVolume.setBackground(new Color(255, 250, 230));
             SFXVolume.setPaintTicks(true);
             SFXVolume.setPaintLabels(true);
-            SFXVolume.setValue((int) SoundEffect.sfxVolume); // added
+            SFXVolume.setMajorTickSpacing(100);
+            SFXVolume.setMinorTickSpacing(0);
+            Hashtable<Integer, JLabel> sfxLabels = new Hashtable<>();
+            sfxLabels.put(0, new JLabel("0"));
+            sfxLabels.put(100, new JLabel("100"));
+            SFXVolume.setLabelTable(sfxLabels);
             SFXVolume.addChangeListener(e -> {
-                SoundEffect.updateAllSFXVolume(SFXVolume.getValue());
+                int value = SFXVolume.getValue();
+                SFXVolume.setToolTipText(value + " %");
+                SoundEffect.updateAllSFXVolume(value);
             });
-            musicVolumeLable = new JLabel("Music Volume");
-            musicVolumeLable.setAlignmentX(Component.CENTER_ALIGNMENT);
-            musicVolumeLable.setFont(new Font("SegoeUI", Font.BOLD, 18));
-            musicVolumeLable.setForeground(Color.WHITE);
 
+            // Music Label
+            musicVolumeLabel = new JLabel("Music Volume");
+            musicVolumeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+            musicVolumeLabel.setFont(new Font("Comic Sans MS", Font.BOLD, 18));
+            musicVolumeLabel.setForeground(Color.DARK_GRAY);
+            musicVolumeLabel.setOpaque(true);
+            musicVolumeLabel.setBackground(new Color(204, 255, 229));
+            musicVolumeLabel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+
+            // Music Slider
             musicVolume = new JSlider(0, 100);
-            musicVolume.setBackground(GameConstants.COLOR_BG);
-            musicVolume.setForeground(Color.WHITE);
-            musicVolume.setMajorTickSpacing(25);
-            musicVolume.setMinorTickSpacing(5);
+            musicVolume.setValue((int) SoundEffect.musicVolume);
+            musicVolume.setBackground(new Color(240, 255, 250));
             musicVolume.setPaintTicks(true);
             musicVolume.setPaintLabels(true);
-            musicVolume.setValue((int) SoundEffect.musicVolume); // added
+            musicVolume.setMajorTickSpacing(100);
+            musicVolume.setMinorTickSpacing(0);
+            Hashtable<Integer, JLabel> musicLabels = new Hashtable<>();
+            musicLabels.put(0, new JLabel("0"));
+            musicLabels.put(100, new JLabel("100"));
+            musicVolume.setLabelTable(musicLabels);
+            musicVolume.setToolTipText(musicVolume.getValue() + "%");
             musicVolume.addChangeListener(e -> {
-                SoundEffect.musicVolume = musicVolume.getValue();
-                SoundEffect.updateBGMusicVolume(musicVolume.getValue());
+                int value = musicVolume.getValue();
+                musicVolume.setToolTipText(value + "%");
+                SoundEffect.updateBGMusicVolume(value);
+            });
+            musicVolume.addMouseMotionListener(new MouseMotionAdapter() {
+                @Override
+                public void mouseDragged(MouseEvent e) {
+                    musicVolume.setToolTipText(musicVolume.getValue() + "%");
+                    ToolTipManager.sharedInstance().mouseMoved(
+                            new MouseEvent(musicVolume, 0, 0, 0, e.getX(), e.getY(), 0, false));
+                }
             });
 
-            add(Box.createRigidArea(new Dimension(0, 15)));
-            add(SFXVolumeLable);
+            add(SFXVolumeLabel);
+            add(Box.createRigidArea(new Dimension(0, 5)));
             add(SFXVolume);
-            add(Box.createRigidArea(new Dimension(0, 15)));
-            add(musicVolumeLable);
+            add(Box.createRigidArea(new Dimension(0, 20)));
+            add(musicVolumeLabel);
+            add(Box.createRigidArea(new Dimension(0, 5)));
             add(musicVolume);
-            add(Box.createRigidArea(new Dimension(0, 15)));
+
+
         }
     }
 
@@ -75,13 +108,12 @@ public class SettingsMenu extends JPanel {
             XIconBtn = new JButton("Set X Icon");
             OIconBtn = new JButton("Set O Icon");
 
-            //perilaku button
             XIconBtn.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
                     String path = getSelectedFilePath();
                     if (!path.isEmpty()) {
-                        Seed.CROSS.changeIcon(path); // Assuming this exists
+                        Seed.CROSS.changeIcon(path);
                         XIconLabel.setText(path);
                     }
                 }
@@ -92,39 +124,34 @@ public class SettingsMenu extends JPanel {
                 public void mouseClicked(MouseEvent e) {
                     String path = getSelectedFilePath();
                     if (!path.isEmpty()) {
-                        Seed.NOUGHT.changeIcon(path); // Assuming this exists
+                        Seed.NOUGHT.changeIcon(path);
                         OIconLabel.setText(path);
                     }
                 }
             });
 
-            //XIcon Button
             XIconBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
-            XIconBtn.setAlignmentY(10);
-            XIconBtn.setFont(new Font("SegoeUI", Font.BOLD, 20));
+            XIconBtn.setFont(new Font("Comic Sans MS", Font.BOLD, 18));
             XIconBtn.setMaximumSize(new Dimension(240, 50));
-            XIconBtn.setBackground(GameConstants.COLOR_BG);
-            XIconBtn.setForeground(Color.WHITE);
-            XIconBtn.setFocusPainted(false);
+            XIconBtn.setBackground(new Color(173, 216, 230));
+            XIconBtn.setForeground(Color.BLACK);
+            XIconBtn.setBorder(BorderFactory.createLineBorder(new Color(135, 206, 235), 2));
 
             XIconLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-            XIconLabel.setFont(new Font("SegoeUI", Font.ITALIC, 16));
+            XIconLabel.setFont(new Font("Comic Sans MS", Font.ITALIC, 16));
             XIconLabel.setForeground(Color.WHITE);
 
-            //OIcon Button
             OIconBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
-            OIconBtn.setAlignmentY(10);
-            OIconBtn.setFont(new Font("SegoeUI", Font.BOLD, 20));
+            OIconBtn.setFont(new Font("Comic Sans MS", Font.BOLD, 18));
             OIconBtn.setMaximumSize(new Dimension(240, 50));
-            OIconBtn.setBackground(GameConstants.COLOR_BG);
-            OIconBtn.setForeground(Color.WHITE);
-            OIconBtn.setFocusPainted(false);
+            OIconBtn.setBackground(new Color(255, 182, 193));
+            OIconBtn.setForeground(Color.BLACK);
+            OIconBtn.setBorder(BorderFactory.createLineBorder(new Color(255, 105, 180), 2));
 
             OIconLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-            OIconLabel.setFont(new Font("SegoeUI", Font.ITALIC, 16));
+            OIconLabel.setFont(new Font("Comic Sans MS", Font.ITALIC, 16));
             OIconLabel.setForeground(Color.WHITE);
 
-            //        pakai glue untuk memusatkan secara vertikal
             add(Box.createVerticalGlue());
             add(XIconBtn);
             add(Box.createRigidArea(new Dimension(0, 10)));
@@ -140,14 +167,11 @@ public class SettingsMenu extends JPanel {
             JFileChooser chooser = new JFileChooser();
             chooser.setDialogTitle("Choose Icon");
             chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-            chooser.setAcceptAllFileFilterUsed(true);
-            chooser.addChoosableFileFilter(
-                    new javax.swing.filechooser.FileNameExtensionFilter("PNG Images", "png"));
+            chooser.addChoosableFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("PNG Images", "png"));
 
             int result = chooser.showOpenDialog(this);
             if (result == JFileChooser.APPROVE_OPTION) {
-                File selectedFile = chooser.getSelectedFile();
-                return selectedFile.getPath();
+                return chooser.getSelectedFile().getPath();
             }
             return "";
         }
@@ -159,19 +183,25 @@ public class SettingsMenu extends JPanel {
 
     public SettingsMenu(JFrame frame) {
         setLayout(new BorderLayout());
-        frame.setBackground(GameConstants.COLOR_BG);
+        setBackground(GameConstants.COLOR_BG);
 
         settingsTitle = new JLabel("Option Menu", SwingConstants.CENTER);
-        settingsTitle.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, Color.BLACK));
+        settingsTitle.setFont(new Font("Comic Sans MS", Font.BOLD, 28));
+        settingsTitle.setForeground(new Color(40, 40, 40));
+        settingsTitle.setOpaque(true);
+        settingsTitle.setBackground(new Color(255, 223, 186));
+        settingsTitle.setBorder(BorderFactory.createMatteBorder(0, 0, 4, 0, Color.ORANGE));
+        settingsTitle.setPreferredSize(new Dimension(0, 60));
 
         backBtn = new JButton("Back to Main Menu");
         backBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
-        backBtn.setAlignmentY(10);
-        backBtn.setFont(new Font("SegoeUI", Font.BOLD, 20));
+        backBtn.setFont(new Font("Comic Sans MS", Font.BOLD, 18));
         backBtn.setMaximumSize(new Dimension(240, 50));
-        backBtn.setBackground(Color.LIGHT_GRAY);
-        backBtn.setForeground(Color.BLACK);
+        backBtn.setBackground(new Color(255, 200, 100));
+        backBtn.setForeground(Color.DARK_GRAY);
+        backBtn.setBorder(BorderFactory.createLineBorder(new Color(255, 170, 60), 2));
         backBtn.setFocusPainted(false);
+        backBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
         backBtn.addActionListener(e -> {
             frame.setContentPane(new StartMenu(frame));
@@ -180,18 +210,15 @@ public class SettingsMenu extends JPanel {
         });
 
         VolumesMenu volumes = new VolumesMenu();
-        volumes.setBackground(GameConstants.COLOR_BG);
-        // UIMenu uimenu = new UIMenu();
         IconMenu iconmenu = new IconMenu();
         iconmenu.setBackground(GameConstants.COLOR_BG);
 
         menus = new JPanel();
+        menus.setLayout(new BoxLayout(menus, BoxLayout.Y_AXIS));
         menus.setBackground(GameConstants.COLOR_BG);
-
-        menus.setLayout(new BorderLayout());
-        menus.add(volumes, BorderLayout.NORTH);
-        // menus.add(uimenu, BorderLayout.CENTER);
-        menus.add(iconmenu, BorderLayout.CENTER);
+        menus.add(volumes);
+        menus.add(Box.createRigidArea(new Dimension(0, 20)));
+        menus.add(iconmenu);
 
         add(settingsTitle, BorderLayout.NORTH);
         add(menus, BorderLayout.CENTER);

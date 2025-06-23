@@ -111,12 +111,12 @@ public class StartMenu extends JPanel {
         button.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
-                SoundEffect.MOUSE_CLICK.play();
+                SoundEffect.HOVER.play();
             }
         });
 
         button.addActionListener(e -> {
-            SoundEffect.MOUSE_CLICK.play();
+            SoundEffect.HOVER.play();
             action.run();
         });
 
