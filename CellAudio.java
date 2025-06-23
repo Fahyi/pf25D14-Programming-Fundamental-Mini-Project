@@ -1,8 +1,9 @@
 import java.awt.*;
+
 /**
- * The Cell class models each individual cell of the game board.
+ * The CellAudio class models each individual cell of the game board.
  */
-public class Cell {
+public class CellAudio {
     // Define named constants for drawing
     public static final int SIZE = 120; // cell width/height (square)
     // Symbols (cross/nought) are displayed inside a cell, with padding from border
@@ -16,7 +17,7 @@ public class Cell {
     int row, col;
 
     /** Constructor to initialize this cell with the specified row and col */
-    public Cell(int row, int col) {
+    public CellAudio(int row, int col) {
         this.row = row;
         this.col = col;
         content = Seed.NO_SEED;
