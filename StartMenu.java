@@ -7,19 +7,19 @@ public class StartMenu extends JPanel {
     public StartMenu(JFrame frame) {
 
         setLayout(new BorderLayout());
-        setBackground(GameConstants.COLOR_BG); // Warna biru toska terang
+        setBackground(GameConstants.COLOR_BG);
 
-        // Panel tengah untuk tombol dan logo
+        // tombol dan logo
         JPanel centerPanel = new JPanel();
         centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
         centerPanel.setOpaque(false);
 
-        // Tambahkan logo Tic Tac Toe
+        // logo tic tac toe
 
         URL logoURL = getClass().getClassLoader().getResource("images/tictactoe_logo.png");
         if (logoURL != null) {
             ImageIcon originalLogo = new ImageIcon(logoURL);
-            Image scaledImage = originalLogo.getImage().getScaledInstance(640, 360, Image.SCALE_SMOOTH);
+            Image scaledImage = originalLogo.getImage().getScaledInstance(360, 360, Image.SCALE_SMOOTH);
             ImageIcon scaledLogoIcon = new ImageIcon(scaledImage);
             JLabel logoLabel = new JLabel(scaledLogoIcon);
             logoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -43,15 +43,12 @@ public class StartMenu extends JPanel {
 
         add(centerPanel, BorderLayout.CENTER);
 
-        // Panel bawah terpisah kiri dan kanan
         JPanel bottomPanel = new JPanel(new BorderLayout());
         bottomPanel.setOpaque(false);
 
-        // Panel kiri untuk tombol options
         JPanel leftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 10));
         leftPanel.setOpaque(false);
 
-        // Tombol options
         URL gearURL = getClass().getClassLoader().getResource("images/gear_icon.png");
         JButton btnOptions;
         if (gearURL != null) {
@@ -84,18 +81,16 @@ public class StartMenu extends JPanel {
         exitButton.addActionListener(e -> System.exit(0));
         rightPanel.add(exitButton);
 
-// Tambahkan ke bottomPanel
         bottomPanel.add(leftPanel, BorderLayout.WEST);
         bottomPanel.add(rightPanel, BorderLayout.EAST);
 
-// Tambahkan bottomPanel ke layout utama
         add(bottomPanel, BorderLayout.SOUTH);
 
     }
 
     private void startSettingsMenu(JFrame frame) {
         frame.setContentPane(new SettingsMenu(frame));
-        frame.revalidate(); // refresh UI
+        frame.revalidate();
         frame.repaint();
 
     }
@@ -106,15 +101,25 @@ public class StartMenu extends JPanel {
         button.setFont(new Font("Comic Sans MS", Font.BOLD, 22));
         button.setMaximumSize(new Dimension(240, 55));
 
-        // Warna tombol ceria: kuning pastel
-        button.setBackground(new Color(255, 223, 100)); // pastel yellow
-        button.setForeground(new Color(50, 50, 50)); // dark gray text
+        button.setBackground(new Color(255, 223, 100));
+        button.setForeground(new Color(50, 50, 50));
 
         button.setFocusPainted(false);
         button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        button.setBorder(BorderFactory.createLineBorder(new Color(255, 200, 0), 2)); // garis oranye terang
+        button.setBorder(BorderFactory.createLineBorder(new Color(255, 200, 0), 2));
 
-        button.addActionListener(e -> action.run());
+        button.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                SoundEffect.MOUSE_CLICK.play();
+            }
+        });
+
+        button.addActionListener(e -> {
+            SoundEffect.MOUSE_CLICK.play();
+            action.run();
+        });
+
         return button;
     }
 
