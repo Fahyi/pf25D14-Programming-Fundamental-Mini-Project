@@ -3,174 +3,190 @@ import java.awt.*;
 import java.awt.event.*;
 import java.net.URL;
 
+/**
+ * Layar awal (main menu) Tic-Tac-Toe.
+ * - Menampilkan logo
+ * - Memilih mode permainan  (Player vs Player / Player vs AI)
+ * - Tombol Play, Settings, dan Exit
+ */
 public class StartMenu extends JPanel {
+
+    // ---------- Konstruktor ----------
     public StartMenu(JFrame frame) {
-
+        /* === Layout dasar panel === */
         setLayout(new BorderLayout());
-        setBackground(GameConstants.COLOR_BG);
+        setBackground(GameConstants.COLOR_BG);     // warna krem milikmu
 
-        // tombol dan logo
+        /* === Bagian tengah : Logo + RadioButton + Tombol Play === */
         JPanel centerPanel = new JPanel();
         centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
         centerPanel.setOpaque(false);
 
-        // logo tic tac toe
+        addLogo(centerPanel);                     // Tambahkan logo
+        centerPanel.add(Box.createVerticalStrut(30));
 
-        URL logoURL = getClass().getClassLoader().getResource("images/tictactoe_logo.png");
-        if (logoURL != null) {
-            ImageIcon originalLogo = new ImageIcon(logoURL);
-            Image scaledImage = originalLogo.getImage().getScaledInstance(360, 360, Image.SCALE_SMOOTH);
-            ImageIcon scaledLogoIcon = new ImageIcon(scaledImage);
-            JLabel logoLabel = new JLabel(scaledLogoIcon);
-            logoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-            centerPanel.add(Box.createVerticalStrut(30));
-            centerPanel.add(logoLabel);
+        /* ---------- Radio-button Mode Permainan ---------- */
+        // gunakan helper agar tulisan pasti terlihat
+        JRadioButton vsPlayer = createModeRadio("Player vs Player");
+        JRadioButton vsAI     = createModeRadio("Player vs AI");
+        vsPlayer.setSelected(true);               // default
 
-        } else {
-            System.err.println("Logo image not found!");
-            JLabel fallback = new JLabel("Tic Tac Toe");
-            fallback.setFont(new Font("SegoeUI", Font.BOLD, 36));
-            fallback.setForeground(Color.WHITE);
-            fallback.setAlignmentX(Component.CENTER_ALIGNMENT);
-            centerPanel.add(Box.createVerticalStrut(30));
-            centerPanel.add(fallback);
-        }
+        ButtonGroup modeGroup = new ButtonGroup();
+        modeGroup.add(vsPlayer);
+        modeGroup.add(vsAI);
 
-        centerPanel.add(Box.createVerticalStrut(40));
-        centerPanel.add(createButton("Play Now!", new Color(2,21,38), () -> startDuoGame(frame)));
-        centerPanel.add(Box.createVerticalStrut(15));
+        centerPanel.add(vsPlayer);
+        centerPanel.add(Box.createVerticalStrut(6));
+        centerPanel.add(vsAI);
+        centerPanel.add(Box.createVerticalStrut(26));
 
+        /* ---------- Tombol Play ---------- */
+        JButton playButton = createButton("Play Now!", () -> {
+            GameManager.isVsAI = vsAI.isSelected();   // simpan preferensi
+            startInputName(frame);                    // lanjut ke dialog nama
+        });
+        centerPanel.add(playButton);
 
         add(centerPanel, BorderLayout.CENTER);
 
-        JPanel bottomPanel = new JPanel(new BorderLayout());
-        bottomPanel.setOpaque(false);
+        /* === Bagian bawah : Settings & Exit === */
+        add(createBottomBar(frame), BorderLayout.SOUTH);
+    }
 
-        JPanel leftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 10));
-        leftPanel.setOpaque(false);
-
-        URL gearURL = getClass().getClassLoader().getResource("images/gear_icon.png");
-        JButton btnOptions;
-        if (gearURL != null) {
-            ImageIcon originalIcon = new ImageIcon(gearURL);
-            Image scaledImage = originalIcon.getImage().getScaledInstance(32, 32, Image.SCALE_SMOOTH);
-            ImageIcon scaledIcon = new ImageIcon(scaledImage);
-            btnOptions = new JButton(scaledIcon);
-        } else {
-            System.err.println("Icon not found!!");
-            btnOptions = new JButton("Options");
+    // ==========================================================
+    //  Helper – Logo
+    // ==========================================================
+    private void addLogo(JPanel parent) {
+        URL logoURL = getClass().getClassLoader().getResource("images/tictactoe_logo.png");
+        if (logoURL != null) {
+            ImageIcon original = new ImageIcon(logoURL);
+            Image img = original.getImage().getScaledInstance(360, 360, Image.SCALE_SMOOTH);
+            JLabel logo = new JLabel(new ImageIcon(img));
+            logo.setAlignmentX(Component.CENTER_ALIGNMENT);
+            parent.add(Box.createVerticalStrut(40));
+            parent.add(logo);
+        } else {                                   // fallback jika logo tak ketemu
+            JLabel fallback = new JLabel("Tic Tac Toe");
+            fallback.setFont(new Font("Segoe UI", Font.BOLD, 36));
+            fallback.setForeground(new Color(40, 40, 40));
+            fallback.setAlignmentX(Component.CENTER_ALIGNMENT);
+            parent.add(Box.createVerticalStrut(40));
+            parent.add(fallback);
         }
-        btnOptions.setPreferredSize(new Dimension(60, 40));
-        btnOptions.setContentAreaFilled(false);
-        btnOptions.setBorderPainted(false);
-        btnOptions.setFocusPainted(false);
-        btnOptions.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        btnOptions.addActionListener(e -> startSettingsMenu(frame));
-        leftPanel.add(btnOptions);
-
-        // Panel kanan untuk tombol exit
-        JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 20, 10));
-        rightPanel.setOpaque(false);
-
-        JButton exitButton = new JButton("Exit");
-        exitButton.setFont(new Font("SegoeUI", Font.BOLD, 16));
-        exitButton.setBackground(Color.RED);
-        exitButton.setForeground(Color.WHITE);
-        exitButton.setFocusPainted(false);
-        exitButton.setPreferredSize(new Dimension(100, 40));
-        exitButton.addActionListener(e -> System.exit(0));
-        rightPanel.add(exitButton);
-
-        bottomPanel.add(leftPanel, BorderLayout.WEST);
-        bottomPanel.add(rightPanel, BorderLayout.EAST);
-
-        add(bottomPanel, BorderLayout.SOUTH);
-
     }
 
-    private void startSettingsMenu(JFrame frame) {
-        frame.setContentPane(new SettingsMenu(frame));
-        frame.revalidate();
-        frame.repaint();
-
+    // ==========================================================
+    //  Helper – Radio-button mode
+    // ==========================================================
+    private JRadioButton createModeRadio(String text) {
+        JRadioButton rb = new JRadioButton(text);
+        rb.setOpaque(false);                        // transparan agar warna bg tetap krem
+        rb.setForeground(new Color(45, 45, 45));   // <–– teks gelap, kontras
+        rb.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        rb.setAlignmentX(Component.CENTER_ALIGNMENT);
+        rb.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        return rb;
     }
 
-    private JButton createButton(String text, Color color, Runnable action) {
-        JButton button = new JButton(text);
-        button.setAlignmentX(Component.CENTER_ALIGNMENT);
-        button.setFont(new Font("Comic Sans MS", Font.BOLD, 22));
-        button.setMaximumSize(new Dimension(240, 55));
+    // ==========================================================
+    //  Helper – Tombol generik
+    // ==========================================================
+    private JButton createButton(String text, Runnable onClick) {
+        JButton btn = new JButton(text);
+        btn.setAlignmentX(Component.CENTER_ALIGNMENT);
+        btn.setFont(new Font("Comic Sans MS", Font.BOLD, 22));
+        btn.setBackground(new Color(255, 223, 100));
+        btn.setForeground(new Color(50, 50, 50));
+        btn.setFocusPainted(false);
+        btn.setBorder(BorderFactory.createLineBorder(new Color(255, 200, 0), 2));
+        btn.setMaximumSize(new Dimension(240, 55));
+        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
-        button.setBackground(new Color(255, 223, 100));
-        button.setForeground(new Color(50, 50, 50));
+        btn.addMouseListener(new MouseAdapter() {
+            @Override public void mouseEntered(MouseEvent e) { SoundEffect.HOVER.play(); }
+        });
+        btn.addActionListener(e -> { SoundEffect.HOVER.play(); onClick.run(); });
+        return btn;
+    }
 
-        button.setFocusPainted(false);
-        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        button.setBorder(BorderFactory.createLineBorder(new Color(255, 200, 0), 2));
+    // ==========================================================
+    //  Helper – Bottom bar (gear & exit)
+    // ==========================================================
+    private JPanel createBottomBar(JFrame frame) {
+        JPanel bottom = new JPanel(new BorderLayout());
+        bottom.setOpaque(false);
 
-        button.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                SoundEffect.HOVER.play();
-            }
+        // ---- tombol gear (Settings) ----
+        JButton gearBtn;
+        URL gearURL = getClass().getClassLoader().getResource("images/gear_icon.png");
+        if (gearURL != null) {
+            ImageIcon gearIcon = new ImageIcon(
+                    new ImageIcon(gearURL).getImage().getScaledInstance(32, 32, Image.SCALE_SMOOTH));
+            gearBtn = new JButton(gearIcon);
+        } else {
+            gearBtn = new JButton("Options");
+        }
+        gearBtn.setPreferredSize(new Dimension(60, 40));
+        gearBtn.setContentAreaFilled(false);
+        gearBtn.setBorderPainted(false);
+        gearBtn.setFocusPainted(false);
+        gearBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        gearBtn.addActionListener(e -> {
+            frame.setContentPane(new SettingsMenu(frame));
+            frame.revalidate(); frame.repaint();
         });
 
-        button.addActionListener(e -> {
-            SoundEffect.HOVER.play();
-            action.run();
-        });
+        JPanel left = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 10));
+        left.setOpaque(false);
+        left.add(gearBtn);
 
-        return button;
+        // ---- tombol Exit ----
+        JButton exitBtn = new JButton("Exit");
+        exitBtn.setPreferredSize(new Dimension(100, 40));
+        exitBtn.setBackground(Color.RED);
+        exitBtn.setForeground(Color.WHITE);
+        exitBtn.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        exitBtn.setFocusPainted(false);
+        exitBtn.addActionListener(e -> System.exit(0));
+
+        JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT, 20, 10));
+        right.setOpaque(false);
+        right.add(exitBtn);
+
+        bottom.add(left,  BorderLayout.WEST);
+        bottom.add(right, BorderLayout.EAST);
+        return bottom;
     }
 
-
-    private void startDuoGame(JFrame frame) {
-        JTextField playerXField = new JTextField("Player X", 15);
-        JTextField playerOField = new JTextField("Player O", 15);
+    // ==========================================================
+    //  Dialog input nama pemain & start game
+    // ==========================================================
+    private void startInputName(JFrame frame) {
+        JTextField pXField = new JTextField("Player X", 15);
+        JTextField pOField = new JTextField("Player O", 15);
 
         JPanel panel = new JPanel(new GridLayout(2, 2, 10, 10));
-
         panel.add(new JLabel("Enter name for Player X:"));
-        panel.add(playerXField);
+        panel.add(pXField);
         panel.add(new JLabel("Enter name for Player O:"));
-        panel.add(playerOField);
+        panel.add(pOField);
 
         int result = JOptionPane.showConfirmDialog(
-                frame,
-                panel,
-                "Enter Player Names",
-                JOptionPane.OK_CANCEL_OPTION,
-                JOptionPane.PLAIN_MESSAGE
-        );
+                frame, panel, "Enter Player Names",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 
-        String playerX = "Player X";
-        String playerO = "Player O";
+        if (result != JOptionPane.OK_OPTION) return;   // user cancel
 
-        if (result == JOptionPane.OK_OPTION) {
-            String inputX = playerXField.getText().trim();
-            String inputO = playerOField.getText().trim();
+        String pX = pXField.getText().trim();
+        String pO = pOField.getText().trim();
+        if (pX.isEmpty()) pX = "Player X";
+        if (pO.isEmpty()) pO = "Player O";
 
-            if (!inputX.isEmpty()) playerX = inputX;
-            if (!inputO.isEmpty()) playerO = inputO;
-
-            frame.setContentPane(new GameMain(playerX, playerO));
-            frame.setSize(400,400);
-
-            frame.pack();
-            frame.setResizable(false);
-            frame.setLocationRelativeTo(null);
-            frame.setVisible(true);
-
-        }else{
-            frame.setContentPane(new StartMenu(frame));
-            frame.revalidate();
-            frame.repaint();
-        }
-
-
+        frame.setContentPane(new GameMain(pX, pO));
+        frame.setSize(400, 400);
+        frame.pack();
+        frame.setResizable(false);
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
     }
-
-
-
-
 }

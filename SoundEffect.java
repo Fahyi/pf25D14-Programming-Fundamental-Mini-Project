@@ -7,7 +7,7 @@ public enum SoundEffect {
     EXPLODE("audio/explode.wav"),
     DIE("audio/die.wav"),
     BG_MUSIC("audio/bg.wav"),
-    MOUSE_CLICK("audio/mouseclick.wav"), // fixed wrong path
+    MOUSE_CLICK("audio/mouseclick.wav"),
     HOVER("audio/hover.wav");
 
     public static float sfxVolume = 100f;
@@ -16,12 +16,16 @@ public enum SoundEffect {
     private Clip clip;
     private FloatControl gainControl;
 
-    // Only BG_MUSIC uses this
     private static boolean isBGMusicPlaying = false;
 
     SoundEffect(String soundFileName) {
         try {
             URL url = this.getClass().getClassLoader().getResource(soundFileName);
+            if (url == null) {
+                System.err.println("⚠️ Sound file not found: " + soundFileName);
+                return;
+            }
+
             AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(url);
             clip = AudioSystem.getClip();
             clip.open(audioInputStream);
@@ -29,15 +33,16 @@ public enum SoundEffect {
             if (clip.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
                 gainControl = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
             }
+
         } catch (Exception e) {
+            System.err.println("❌ Failed to load sound: " + soundFileName);
             e.printStackTrace();
         }
     }
 
     public void play() {
-        if (this != BG_MUSIC && sfxVolume > 0) {
-            if (clip.isRunning())
-                clip.stop();
+        if (this != BG_MUSIC && sfxVolume > 0 && clip != null) {
+            if (clip.isRunning()) clip.stop();
             clip.setFramePosition(0);
             setVolume(sfxVolume / 100f);
             clip.start();
@@ -45,9 +50,8 @@ public enum SoundEffect {
     }
 
     public void play(float volume) {
-        if (this != BG_MUSIC && sfxVolume > 0) {
-            if (clip.isRunning())
-                clip.stop();
+        if (this != BG_MUSIC && sfxVolume > 0 && clip != null) {
+            if (clip.isRunning()) clip.stop();
             clip.setFramePosition(0);
             setVolume(sfxVolume / volume);
             clip.start();
@@ -55,8 +59,7 @@ public enum SoundEffect {
     }
 
     private void setVolume(float volume) {
-        if (gainControl == null)
-            return;
+        if (gainControl == null) return;
 
         float min = gainControl.getMinimum();
         float max = gainControl.getMaximum();
@@ -65,14 +68,12 @@ public enum SoundEffect {
             gainControl.setValue(min);
         } else {
             float dB = (float) (Math.log10(volume) * 20.0);
-            dB = Math.max(min, Math.min(dB, max));
-            gainControl.setValue(dB);
+            gainControl.setValue(Math.max(min, Math.min(dB, max)));
         }
     }
 
     public static void playBGMusic() {
-        if (BG_MUSIC.clip == null)
-            return;
+        if (BG_MUSIC.clip == null) return;
 
         if (!isBGMusicPlaying) {
             BG_MUSIC.clip.loop(Clip.LOOP_CONTINUOUSLY);
@@ -86,9 +87,7 @@ public enum SoundEffect {
     public static void updateAllSFXVolume(int newVolume) {
         sfxVolume = newVolume;
         for (SoundEffect sfx : SoundEffect.values()) {
-            if (sfx != BG_MUSIC) {
-                sfx.setVolume(sfxVolume / 100f);
-            }
+            if (sfx != BG_MUSIC) sfx.setVolume(sfxVolume / 100f);
         }
     }
 
