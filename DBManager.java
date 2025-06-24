@@ -25,7 +25,7 @@ public class DBManager {
     }
 
     public void insertMove(int gameId, char player, int row, int col, int moveNumber) {
-        String sql = "INSERT INTO moves (game_id, player, `row`, `col`, move_number) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO moves (game_id, player, row, col, move_number) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = DriverManager.getConnection(jdbcUrl, userName, password);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, gameId);
@@ -41,7 +41,7 @@ public class DBManager {
 
     public ArrayList<Move> getMoves(int gameId) {
         ArrayList<Move> moves = new ArrayList<>();
-        String sql = "SELECT player, `row`, `col`, move_number FROM moves WHERE game_id = ? ORDER BY move_number ASC";
+        String sql = "SELECT player, row, col, move_number FROM moves WHERE game_id = ? ORDER BY move_number ASC";
 
         try (Connection conn = DriverManager.getConnection(jdbcUrl, userName, password);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {

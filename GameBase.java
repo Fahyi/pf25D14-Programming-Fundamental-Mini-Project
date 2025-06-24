@@ -18,6 +18,9 @@ public class GameBase extends JPanel {
     public BoardPanel boardPanel;
     private JPanel pauseOverlay;
 
+    // Tambahan agar GameManager bisa akses state terakhir
+    private static State lastKnownState = State.PLAYING;
+
     public GameBase(String playerXName, String playerOName) {
         this.playerXName = playerXName;
         this.playerOName = playerOName;
@@ -36,13 +39,14 @@ public class GameBase extends JPanel {
 
         currentPlayer = Seed.CROSS;
         currentState = State.PLAYING;
+        lastKnownState = currentState; // <- update state global juga
     }
 
     public void setupUI() {
         setLayout(new BorderLayout());
         setPreferredSize(new Dimension(Board.CANVAS_WIDTH, Board.CANVAS_HEIGHT + 70));
         setBackground(new Color(255, 250, 240)); // background pastel cerah
-        setBorder(BorderFactory.createLineBorder(new Color(255, 204, 153), 4)); // garis krem
+        setBorder(BorderFactory.createLineBorder(new Color(255, 204, 153), 4));
 
         // Label skor
         scoreLabel = new JLabel();
@@ -63,7 +67,6 @@ public class GameBase extends JPanel {
 
         pauseButton.addActionListener(e -> showPauseMenu());
 
-        // Panel atas untuk skor
         JPanel topPanel = new JPanel(new BorderLayout()) {
             @Override
             protected void paintComponent(Graphics g) {
@@ -77,7 +80,6 @@ public class GameBase extends JPanel {
         topPanel.setPreferredSize(new Dimension(Board.CANVAS_WIDTH, 45));
         topPanel.add(scoreLabel, BorderLayout.CENTER);
 
-        // Panel status di bawah
         JPanel statusPanel = new JPanel(new BorderLayout());
         statusPanel.setBackground(new Color(255, 250, 230));
         statusPanel.setPreferredSize(new Dimension(Board.CANVAS_WIDTH, 40));
@@ -89,13 +91,11 @@ public class GameBase extends JPanel {
         statusBar.setHorizontalAlignment(SwingConstants.LEFT);
         statusPanel.add(statusBar, BorderLayout.CENTER);
 
-        // Panel tombol
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         buttonPanel.setOpaque(false);
         buttonPanel.add(pauseButton);
         statusPanel.add(buttonPanel, BorderLayout.EAST);
 
-        // Panel papan permainan
         boardPanel = new BoardPanel(board);
         boardPanel.setBackground(new Color(255, 245, 235));
         boardPanel.addMouseListener(new MouseAdapter() {
@@ -105,12 +105,10 @@ public class GameBase extends JPanel {
             }
         });
 
-        // Tambahkan semuanya
         add(topPanel, BorderLayout.NORTH);
         add(boardPanel, BorderLayout.CENTER);
         add(statusPanel, BorderLayout.SOUTH);
     }
-
 
     public void updateScoreLabel() {
         scoreLabel.setText(playerXName + ": " + playerXScore + "   |   " + playerOName + ": " + playerOScore);
@@ -124,19 +122,19 @@ public class GameBase extends JPanel {
             case CROSS_WON -> statusBar.setText(playerXName + " Won! Click anywhere to play again.");
             case NOUGHT_WON -> statusBar.setText(playerOName + " Won! Click anywhere to play again.");
         }
+        lastKnownState = currentState; // <- update setiap kali ada perubahan
     }
 
-    public void handleClick(int x, int y){
-        //buat nanti di override sama childrennya
-    };
-
+    public void handleClick(int x, int y) {
+        // akan dioverride oleh GameMain
+    }
 
     public void showPauseMenu() {
         this.pauseOverlay = new JPanel() {
             @Override
             public void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                g.setColor(new Color(0, 0, 0, 100)); // lebih lembut agar tetap ceria
+                g.setColor(new Color(0, 0, 0, 100));
                 g.fillRect(0, 0, getWidth(), getHeight());
             }
         };
@@ -146,17 +144,14 @@ public class GameBase extends JPanel {
         pauseOverlay.setFocusable(true);
         pauseOverlay.requestFocusInWindow();
 
-        // Disable interaksi ke board saat pause
         pauseOverlay.addMouseListener(new MouseAdapter() {});
         pauseOverlay.addMouseMotionListener(new MouseMotionAdapter() {});
         pauseOverlay.addMouseWheelListener(e -> {});
 
-        // Tombol box
         JPanel buttonBox = new JPanel();
         buttonBox.setOpaque(false);
         buttonBox.setLayout(new BoxLayout(buttonBox, BoxLayout.Y_AXIS));
 
-        // Tombol Continue
         JButton continueButton = new JButton("Continue");
         continueButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         continueButton.setFont(new Font("Comic Sans MS", Font.BOLD, 18));
@@ -168,7 +163,6 @@ public class GameBase extends JPanel {
         continueButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         continueButton.addActionListener(e -> hidePauseMenu());
 
-        // Tombol Exit
         JButton exitButton = new JButton("Exit to Menu");
         exitButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         exitButton.setFont(new Font("Comic Sans MS", Font.BOLD, 18));
@@ -178,7 +172,6 @@ public class GameBase extends JPanel {
         exitButton.setBorder(BorderFactory.createLineBorder(new Color(255, 102, 102), 2));
         exitButton.setFocusPainted(false);
         exitButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-
         exitButton.addActionListener(e -> {
             JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
             topFrame.getContentPane().removeAll();
@@ -209,8 +202,6 @@ public class GameBase extends JPanel {
         });
     }
 
-
-
     public void hidePauseMenu() {
         if (pauseOverlay != null) {
             remove(pauseOverlay);
@@ -219,5 +210,10 @@ public class GameBase extends JPanel {
             revalidate();
             repaint();
         }
+    }
+
+    // Method tambahan agar bisa diakses GameManager untuk efek blur
+    public static State getCurrentState() {
+        return lastKnownState;
     }
 }
