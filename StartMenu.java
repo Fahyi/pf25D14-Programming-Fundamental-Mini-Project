@@ -162,31 +162,76 @@ public class StartMenu extends JPanel {
     //  Dialog input nama pemain & start game
     // ==========================================================
     private void startInputName(JFrame frame) {
-        JTextField pXField = new JTextField("Player X", 15);
-        JTextField pOField = new JTextField("Player O", 15);
+        if (GameManager.isVsAI) {
+            // === MODE: PLAYER vs AI ===
+            JRadioButton asX = new JRadioButton("Play as X");
+            JRadioButton asO = new JRadioButton("Play as O");
+            ButtonGroup symbolGroup = new ButtonGroup();
+            symbolGroup.add(asX);
+            symbolGroup.add(asO);
+            asX.setSelected(true);
 
-        JPanel panel = new JPanel(new GridLayout(2, 2, 10, 10));
-        panel.add(new JLabel("Enter name for Player X:"));
-        panel.add(pXField);
-        panel.add(new JLabel("Enter name for Player O:"));
-        panel.add(pOField);
+            JPanel symbolPanel = new JPanel(new GridLayout(3, 1, 5, 5));
+            symbolPanel.add(new JLabel("Choose your symbol:"));
+            symbolPanel.add(asX);
+            symbolPanel.add(asO);
 
-        int result = JOptionPane.showConfirmDialog(
-                frame, panel, "Enter Player Names",
-                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+            int symbolChoice = JOptionPane.showConfirmDialog(
+                    frame, symbolPanel, "Choose symbol", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 
-        if (result != JOptionPane.OK_OPTION) return;   // user cancel
+            if (symbolChoice != JOptionPane.OK_OPTION) return;
 
-        String pX = pXField.getText().trim();
-        String pO = pOField.getText().trim();
-        if (pX.isEmpty()) pX = "Player X";
-        if (pO.isEmpty()) pO = "Player O";
+            boolean playerAsX = asX.isSelected();
 
-        frame.setContentPane(new GameMain(pX, pO));
-        frame.setSize(400, 400);
-        frame.pack();
-        frame.setResizable(false);
-        frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
+            // Input nama pemain
+            JTextField nameField = new JTextField(15);
+            JPanel namePanel = new JPanel(new GridLayout(2, 1, 10, 10));
+            namePanel.add(new JLabel("Input your name:"));
+            namePanel.add(nameField);
+
+            int nameResult = JOptionPane.showConfirmDialog(
+                    frame, namePanel, "Player Name", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+            if (nameResult != JOptionPane.OK_OPTION) return;
+
+            String playerName = nameField.getText().trim();
+            if (playerName.isEmpty()) playerName = playerAsX ? "Player X" : "Player O";
+
+            frame.setContentPane(new GameMain(playerName, playerAsX));
+            frame.setSize(400, 400);
+            frame.pack();
+            frame.setResizable(false);
+            frame.setLocationRelativeTo(null);
+            frame.setVisible(true);
+
+        } else {
+            // === MODE: PLAYER vs PLAYER ===
+            JTextField pXField = new JTextField("Player X", 15);
+            JTextField pOField = new JTextField("Player O", 15);
+
+            JPanel panel = new JPanel(new GridLayout(2, 2, 10, 10));
+            panel.add(new JLabel("Enter name for Player X:"));
+            panel.add(pXField);
+            panel.add(new JLabel("Enter name for Player O:"));
+            panel.add(pOField);
+
+            int result = JOptionPane.showConfirmDialog(
+                    frame, panel, "Enter Player Names",
+                    JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+            if (result != JOptionPane.OK_OPTION) return;
+
+            String pX = pXField.getText().trim();
+            String pO = pOField.getText().trim();
+            if (pX.isEmpty()) pX = "Player X";
+            if (pO.isEmpty()) pO = "Player O";
+
+            frame.setContentPane(new GameMain(pX, pO));
+            frame.setSize(400, 400);
+            frame.pack();
+            frame.setResizable(false);
+            frame.setLocationRelativeTo(null);
+            frame.setVisible(true);
+        }
     }
 }

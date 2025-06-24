@@ -8,13 +8,25 @@ public class GameMain extends GameBase {
     private Timer turnTimer;
     private int countdownSeconds = 5;
 
-    public GameMain(String playerXName, String playerOName) {
-        super(playerXName, playerOName);
+    public GameMain(String playerName, boolean playerAsX) {
+        super(playerAsX ? playerName : "AI", playerAsX ? "AI" : playerName);
 
         if (GameManager.isVsAI) {
-            aiPlayer = new AIPlayer(Seed.NOUGHT); // AI selalu main sebagai O
+            Seed aiSeed = playerAsX ? Seed.NOUGHT : Seed.CROSS;
+            aiPlayer = new AIPlayer(aiSeed);
+            currentPlayer = Seed.CROSS; // X always starts
         }
 
+        initGame();
+        setupUI();
+        newGame();
+        updateScoreLabel();
+        updateStatusBar();
+        startTurnTimer();
+    }
+
+    public GameMain(String playerXName, String playerOName) {
+        super(playerXName, playerOName);  // panggil konstruktor GameBase
         initGame();
         setupUI();
         newGame();
