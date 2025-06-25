@@ -8,12 +8,12 @@ public class GameMain extends GameBase {
     private Timer turnTimer;
     private int countdownSeconds = 5;
 
-    public GameMain(String playerName, boolean playerAsX, Difficulty difficulty) {
+    public GameMain(String playerName, boolean playerAsX) {
         super(playerAsX ? playerName : "AI", playerAsX ? "AI" : playerName);
 
         if (GameManager.isVsAI) {
             Seed aiSeed = playerAsX ? Seed.NOUGHT : Seed.CROSS;
-            aiPlayer = new AIPlayer(aiSeed, difficulty);
+            aiPlayer = new AIPlayer(aiSeed);
             currentPlayer = Seed.CROSS; // X always starts
         }
 
