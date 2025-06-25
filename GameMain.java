@@ -8,13 +8,12 @@ public class GameMain extends GameBase {
     private Timer turnTimer;
     private int countdownSeconds = 5;
 
-    // Constructor untuk mode vs AI
-    public GameMain(String playerName, boolean playerAsX) {
+    public GameMain(String playerName, boolean playerAsX, Difficulty difficulty) {
         super(playerAsX ? playerName : "AI", playerAsX ? "AI" : playerName);
 
         if (GameManager.isVsAI) {
             Seed aiSeed = playerAsX ? Seed.NOUGHT : Seed.CROSS;
-            aiPlayer = new AIPlayer(aiSeed);
+            aiPlayer = new AIPlayer(aiSeed, difficulty);
             currentPlayer = Seed.CROSS; // X always starts
         }
 
@@ -26,9 +25,8 @@ public class GameMain extends GameBase {
         startTurnTimer();
     }
 
-    // Constructor untuk mode Player vs Player
     public GameMain(String playerXName, String playerOName) {
-        super(playerXName, playerOName);
+        super(playerXName, playerOName);  // panggil konstruktor GameBase
         initGame();
         setupUI();
         newGame();
@@ -64,8 +62,6 @@ public class GameMain extends GameBase {
         if (currentState == State.CROSS_WON) playerXScore++;
         else if (currentState == State.NOUGHT_WON) playerOScore++;
 
-        applyHighlightIfGameOver(); // ⬅️ Highlight garis pemenang
-
         SoundEffect.MOUSE_CLICK.play(5);
         currentPlayer = (currentPlayer == Seed.CROSS) ? Seed.NOUGHT : Seed.CROSS;
 
@@ -92,8 +88,6 @@ public class GameMain extends GameBase {
 
             if (currentState == State.NOUGHT_WON) playerOScore++;
 
-            applyHighlightIfGameOver(); // Highlight garis pemenang
-
             currentPlayer = Seed.CROSS;
             SoundEffect.MOUSE_CLICK.play(5);
             updateScoreLabel();
@@ -102,23 +96,6 @@ public class GameMain extends GameBase {
 
             if (currentState == State.PLAYING) {
                 startTurnTimer();
-            }
-        }
-    }
-
-    /** Tambahan: sorot garis kemenangan jika game selesai */
-    private void applyHighlightIfGameOver() {
-        if (currentState == State.CROSS_WON || currentState == State.NOUGHT_WON) {
-            // Reset semua sel jadi tidak highlight
-            for (Cell[] row : board.cells) {
-                for (Cell cell : row) {
-                    cell.setHighlighted(false);
-                }
-            }
-
-            // Sorot hanya sel pemenang
-            for (Cell cell : board.getWinLine()) {
-                if (cell != null) cell.setHighlighted(true);
             }
         }
     }

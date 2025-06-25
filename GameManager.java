@@ -2,7 +2,7 @@ import javax.swing.*;
 
 public class GameManager {
     public static final String TITLE = "Tic Tac Toe";
-    public static boolean isVsAI = false; // Menyimpan mode permainan
+    public static boolean isVsAI = false; // Tambahan ini penting!
 
     public static void main(String[] args) {
         SoundEffect.playBGMusic(); // Musik latar
@@ -16,11 +16,5 @@ public class GameManager {
             frame.setLocationRelativeTo(null);
             frame.setVisible(true);
         });
-    }
-
-    // Tambahan penting untuk efek blur dan highlight
-    public static boolean isGameOver() {
-        State state = GameBase.getCurrentState();  // Dapatkan state terbaru dari GameBase
-        return state == State.CROSS_WON || state == State.NOUGHT_WON || state == State.DRAW;
     }
 }

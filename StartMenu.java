@@ -11,25 +11,26 @@ import java.net.URL;
  */
 public class StartMenu extends JPanel {
 
+    private JComboBox<String> difficultyCombo; // Tambahan: dropdown untuk memilih level AI
+
     // ---------- Konstruktor ----------
     public StartMenu(JFrame frame) {
         /* === Layout dasar panel === */
         setLayout(new BorderLayout());
-        setBackground(GameConstants.COLOR_BG);     // warna krem milikmu
+        setBackground(GameConstants.COLOR_BG);
 
         /* === Bagian tengah : Logo + RadioButton + Tombol Play === */
         JPanel centerPanel = new JPanel();
         centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
         centerPanel.setOpaque(false);
 
-        addLogo(centerPanel);                     // Tambahkan logo
+        addLogo(centerPanel);
         centerPanel.add(Box.createVerticalStrut(30));
 
         /* ---------- Radio-button Mode Permainan ---------- */
-        // gunakan helper agar tulisan pasti terlihat
         JRadioButton vsPlayer = createModeRadio("Player vs Player");
         JRadioButton vsAI     = createModeRadio("Player vs AI");
-        vsPlayer.setSelected(true);               // default
+        vsPlayer.setSelected(true);
 
         ButtonGroup modeGroup = new ButtonGroup();
         modeGroup.add(vsPlayer);
@@ -38,24 +39,31 @@ public class StartMenu extends JPanel {
         centerPanel.add(vsPlayer);
         centerPanel.add(Box.createVerticalStrut(6));
         centerPanel.add(vsAI);
-        centerPanel.add(Box.createVerticalStrut(26));
+        centerPanel.add(Box.createVerticalStrut(12));
+
+        /* ---------- Dropdown Tingkat Kesulitan ---------- */
+        difficultyCombo = new JComboBox<>(new String[]{"Easy", "Medium", "Hard"});
+        difficultyCombo.setMaximumSize(new Dimension(180, 30));
+        difficultyCombo.setAlignmentX(Component.CENTER_ALIGNMENT);
+        difficultyCombo.setVisible(false);
+        centerPanel.add(difficultyCombo);
+        centerPanel.add(Box.createVerticalStrut(20));
+
+        // Toggle visibility dropdown jika pilih vs AI
+        vsAI.addActionListener(e -> difficultyCombo.setVisible(true));
+        vsPlayer.addActionListener(e -> difficultyCombo.setVisible(false));
 
         /* ---------- Tombol Play ---------- */
         JButton playButton = createButton("Play Now!", () -> {
-            GameManager.isVsAI = vsAI.isSelected();   // simpan preferensi
-            startInputName(frame);                    // lanjut ke dialog nama
+            GameManager.isVsAI = vsAI.isSelected();
+            startInputName(frame);
         });
         centerPanel.add(playButton);
 
         add(centerPanel, BorderLayout.CENTER);
-
-        /* === Bagian bawah : Settings & Exit === */
         add(createBottomBar(frame), BorderLayout.SOUTH);
     }
 
-    // ==========================================================
-    //  Helper – Logo
-    // ==========================================================
     private void addLogo(JPanel parent) {
         URL logoURL = getClass().getClassLoader().getResource("images/tictactoe_logo.png");
         if (logoURL != null) {
@@ -65,7 +73,7 @@ public class StartMenu extends JPanel {
             logo.setAlignmentX(Component.CENTER_ALIGNMENT);
             parent.add(Box.createVerticalStrut(40));
             parent.add(logo);
-        } else {                                   // fallback jika logo tak ketemu
+        } else {
             JLabel fallback = new JLabel("Tic Tac Toe");
             fallback.setFont(new Font("Segoe UI", Font.BOLD, 36));
             fallback.setForeground(new Color(40, 40, 40));
@@ -75,22 +83,16 @@ public class StartMenu extends JPanel {
         }
     }
 
-    // ==========================================================
-    //  Helper – Radio-button mode
-    // ==========================================================
     private JRadioButton createModeRadio(String text) {
         JRadioButton rb = new JRadioButton(text);
-        rb.setOpaque(false);                        // transparan agar warna bg tetap krem
-        rb.setForeground(new Color(45, 45, 45));   // <–– teks gelap, kontras
+        rb.setOpaque(false);
+        rb.setForeground(new Color(45, 45, 45));
         rb.setFont(new Font("Segoe UI", Font.BOLD, 16));
         rb.setAlignmentX(Component.CENTER_ALIGNMENT);
         rb.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         return rb;
     }
 
-    // ==========================================================
-    //  Helper – Tombol generik
-    // ==========================================================
     private JButton createButton(String text, Runnable onClick) {
         JButton btn = new JButton(text);
         btn.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -109,19 +111,14 @@ public class StartMenu extends JPanel {
         return btn;
     }
 
-    // ==========================================================
-    //  Helper – Bottom bar (gear & exit)
-    // ==========================================================
     private JPanel createBottomBar(JFrame frame) {
         JPanel bottom = new JPanel(new BorderLayout());
         bottom.setOpaque(false);
 
-        // ---- tombol gear (Settings) ----
         JButton gearBtn;
         URL gearURL = getClass().getClassLoader().getResource("images/gear_icon.png");
         if (gearURL != null) {
-            ImageIcon gearIcon = new ImageIcon(
-                    new ImageIcon(gearURL).getImage().getScaledInstance(32, 32, Image.SCALE_SMOOTH));
+            ImageIcon gearIcon = new ImageIcon(new ImageIcon(gearURL).getImage().getScaledInstance(32, 32, Image.SCALE_SMOOTH));
             gearBtn = new JButton(gearIcon);
         } else {
             gearBtn = new JButton("Options");
@@ -140,7 +137,6 @@ public class StartMenu extends JPanel {
         left.setOpaque(false);
         left.add(gearBtn);
 
-        // ---- tombol Exit ----
         JButton exitBtn = new JButton("Exit");
         exitBtn.setPreferredSize(new Dimension(100, 40));
         exitBtn.setBackground(Color.RED);
@@ -158,46 +154,47 @@ public class StartMenu extends JPanel {
         return bottom;
     }
 
-    // ==========================================================
-    //  Dialog input nama pemain & start game
-    // ==========================================================
     private void startInputName(JFrame frame) {
         if (GameManager.isVsAI) {
-            // === MODE: PLAYER vs AI ===
-            JRadioButton asX = new JRadioButton("Saya sebagai X (main duluan)");
-            JRadioButton asO = new JRadioButton("Saya sebagai O (main belakangan)");
+            JRadioButton asX = new JRadioButton("Play as X");
+            JRadioButton asO = new JRadioButton("Play as O");
             ButtonGroup symbolGroup = new ButtonGroup();
             symbolGroup.add(asX);
             symbolGroup.add(asO);
             asX.setSelected(true);
 
             JPanel symbolPanel = new JPanel(new GridLayout(3, 1, 5, 5));
-            symbolPanel.add(new JLabel("Pilih simbol Anda:"));
+            symbolPanel.add(new JLabel("Choose your symbol:"));
             symbolPanel.add(asX);
             symbolPanel.add(asO);
 
             int symbolChoice = JOptionPane.showConfirmDialog(
-                    frame, symbolPanel, "Pilih Simbol", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-
+                    frame, symbolPanel, "Choose symbol", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
             if (symbolChoice != JOptionPane.OK_OPTION) return;
 
             boolean playerAsX = asX.isSelected();
 
-            // Input nama pemain
             JTextField nameField = new JTextField(15);
             JPanel namePanel = new JPanel(new GridLayout(2, 1, 10, 10));
-            namePanel.add(new JLabel("Masukkan nama Anda:"));
+            namePanel.add(new JLabel("Input your name:"));
             namePanel.add(nameField);
 
             int nameResult = JOptionPane.showConfirmDialog(
-                    frame, namePanel, "Nama Pemain", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-
+                    frame, namePanel, "Player Name", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
             if (nameResult != JOptionPane.OK_OPTION) return;
 
             String playerName = nameField.getText().trim();
             if (playerName.isEmpty()) playerName = playerAsX ? "Player X" : "Player O";
 
-            frame.setContentPane(new GameMain(playerName, playerAsX));
+            String selected = (String) difficultyCombo.getSelectedItem();
+            Difficulty difficulty = switch (selected) {
+                case "Easy" -> Difficulty.EASY;
+                case "Medium" -> Difficulty.MEDIUM;
+                case "Hard" -> Difficulty.HARD;
+                default -> Difficulty.MEDIUM;
+            };
+
+            frame.setContentPane(new GameMain(playerName, playerAsX, difficulty));
             frame.setSize(400, 400);
             frame.pack();
             frame.setResizable(false);
@@ -205,7 +202,6 @@ public class StartMenu extends JPanel {
             frame.setVisible(true);
 
         } else {
-            // === MODE: PLAYER vs PLAYER ===
             JTextField pXField = new JTextField("Player X", 15);
             JTextField pOField = new JTextField("Player O", 15);
 
@@ -218,7 +214,6 @@ public class StartMenu extends JPanel {
             int result = JOptionPane.showConfirmDialog(
                     frame, panel, "Enter Player Names",
                     JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-
             if (result != JOptionPane.OK_OPTION) return;
 
             String pX = pXField.getText().trim();

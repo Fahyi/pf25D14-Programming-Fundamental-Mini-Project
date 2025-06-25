@@ -22,7 +22,7 @@ public enum SoundEffect {
         try {
             URL url = this.getClass().getClassLoader().getResource(soundFileName);
             if (url == null) {
-                System.err.println("⚠️ Sound file not found: " + soundFileName);
+                System.err.println("⚠ Sound file not found: " + soundFileName);
                 return;
             }
 
